@@ -1,4 +1,6 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react'
+import TodoItem from './TodoItem'
+import './style.css'
 
 class TodoList extends Component {
 
@@ -8,35 +10,65 @@ class TodoList extends Component {
       inputValue: '',
       list: []
     }
+    this.handleInputChange = this.handleInputChange.bind(this)
+    this.handleBtnClick = this.handleBtnClick.bind(this)
+    this.handleItemDelete = this.handleItemDelete.bind(this)
   }
 
   render() {
     return (
       <Fragment>
+        {/* Fragment是组件 */}
         <div>
-          <input 
+          <label htmlFor='insertArea'>输入内容</label>
+          <input
+            id='insertArea'
+            className='input'
             value={this.state.inputValue}
-            onChange={this.handleInputChange.bind(this)}
+            onChange={this.handleInputChange}
           />
-          <button>提交</button>
+          <button onClick={this.handleBtnClick}>提交</button>
         </div>
         <ul>
-          <li>1</li>
-          <li>1</li>
+          {this.getTodoItem()}
         </ul>
       </Fragment>
     );
   }
 
+  getTodoItem() {
+    return this.state.list.map((item, index) => { return (
+      <TodoItem
+        key={index}
+        content={item} 
+        index={index} 
+        deleteItem={this.handleItemDelete} />
+    )}) 
+  }
+
+  handleBtnClick() {
+    this.setState((prevState) => ({
+      list: [...prevState.list, prevState.inputValue],
+      inputValue: ''
+    }))
+  }
+
+  handleItemDelete(index) {
+    this.setState((prevState) => {
+      const list = [...prevState.list]
+      list.splice(index, 1)
+      return {list}
+    })
+  }
 
   handleInputChange(e) {
-    this.setState({
-      inputValue: e.target.value
-    })
+    const value = e.target.value
+    this.setState(() => ({
+      inputValue: value
+    }))
     // this.state.inputValue = e.target.value
-    console.log(this)
   }
 
 }
 
-export default TodoList;
+export default TodoList
