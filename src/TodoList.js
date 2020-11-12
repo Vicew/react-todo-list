@@ -1,105 +1,65 @@
-import React, { Component, Fragment } from 'react'
-import TodoItem from './TodoItem'
-import axios from './axios'
-import './style.css'
+import React, { Component } from 'react'
+import 'antd/dist/antd.css';
+import { Input, Button, List } from 'antd'
+import store from './store'
+import { getInputChangeAction, getAddItemAction, getDeleteItemAction } from './store/actionCreator'
 
 class TodoList extends Component {
 
-  constructor(props) {
-    super(props);
-    // 当组件的state或者props发生改变的时候, render函数就会重新执行
-    this.state = {
-      inputValue: '',
-      list: []
-    }
+  constructor() {
+    super();
+    this.state = store.getState();
     this.handleInputChange = this.handleInputChange.bind(this)
+    this.handleStoreChange = this.handleStoreChange.bind(this)
     this.handleBtnClick = this.handleBtnClick.bind(this)
-    this.handleItemDelete = this.handleItemDelete.bind(this)
-  }
-
-  // 在组件即将被挂在到页面的时刻自动执行
-  componentWillMount(){
-    console.log('componentWillMount')
-  }
-
-  // 组件被挂载到页面之后，自动被执行
-  componentDidMount(){
-    axios.get()
-  }
-
-  // 组件被更新之前，他会自动被执行
-  shouldComponentUpdate() {
-    console.log('shouldComponentUpdate')
-    return true
-  }
-
-  // 组件被更新之前，它会自动执行，但是他在shouldComponentUpdate之后被执行，如果shouldComponentUpdate返回true才会执行
-  componentWillUpdate() {
-    console.log('componentWillUpdate')
-  }
-
-  componentDidUpdate() {
-    console.log('componentDidUpdate')
-  }
-
-  componentWillReceiveProps() {
-    console.log('componentWillReceiveProps')
+    store.subscribe(this.handleStoreChange)
   }
 
   render() {
-    console.log('render');
     return (
-      <Fragment>
-        {/* Fragment是组件 */}
+      <div style={{marginTop: '10px', marginLeft: '10px'}}>
+        <div className="name"></div>
         <div>
-          <label htmlFor='insertArea'>输入内容</label>
-          <input
-            id='insertArea'
-            className='input'
+          <Input
             value={this.state.inputValue}
+            placeholder='todo info'
+            style={{width: '300px', marginRight: '10px'}}
             onChange={this.handleInputChange}
           />
-          <button onClick={this.handleBtnClick}>提交</button>
+          <Button type="primary" onClick={this.handleBtnClick}>提交</Button>
         </div>
-        <ul>
-          {this.getTodoItem()}
-        </ul>
-      </Fragment>
-    );
-  }
-
-  getTodoItem() {
-    return this.state.list.map((item, index) => { return (
-      <TodoItem
-        key={index}
-        content={item} 
-        index={index} 
-        deleteItem={this.handleItemDelete} />
-    )}) 
-  }
-
-  handleBtnClick() {
-    this.setState((prevState) => ({
-      list: [...prevState.list, prevState.inputValue],
-      inputValue: ''
-    }))
-  }
-
-  handleItemDelete(index) {
-    this.setState((prevState) => {
-      const list = [...prevState.list]
-      list.splice(index, 1)
-      return {list}
-    })
+        <List
+          style={{marginTop: '10px', width: '300px'}}
+          bordered
+          dataSource={this.state.list}
+          renderItem={(item, index) => (
+            <List.Item onClick={this.handleItemDelete.bind(this, index)}>
+              {item}
+            </List.Item>
+          )}
+        />
+      </div>
+    )
   }
 
   handleInputChange(e) {
-    const value = e.target.value
-    this.setState(() => ({
-      inputValue: value
-    }))
+    const action = getInputChangeAction(e.target.value)
+    store.dispatch(action);
   }
 
+  handleStoreChange() {
+    this.setState(store.getState())
+  }
+
+  handleBtnClick() {
+    const action = getAddItemAction()
+    store.dispatch(action)
+  }
+
+  handleItemDelete(index) {
+    const action = getDeleteItemAction(index)
+    store.dispatch(action)
+  }
 }
 
 export default TodoList
